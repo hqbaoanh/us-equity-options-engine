@@ -16,6 +16,13 @@ if(ENABLE_SANITIZERS)
   add_link_options(-fsanitize=address,undefined)
 endif()
 
+add_library(options_core
+  src/black_scholes.cpp
+  src/binomial.cpp
+)
+target_include_directories(options_core PUBLIC include)
+target_compile_options(options_core PRIVATE -Wall -Wextra -Wpedantic)
+
 # GoogleTest, downloaded at configure time
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
@@ -32,6 +39,9 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 include(GoogleTest)
 
-add_executable(tests tests/test_sanity.cpp)
-target_link_libraries(tests PRIVATE GTest::gtest_main)
+add_executable(tests
+  tests/test_black_scholes.cpp
+  tests/test_binomial.cpp
+)
+target_link_libraries(tests PRIVATE options_core GTest::gtest_main)
 gtest_discover_tests(tests)
