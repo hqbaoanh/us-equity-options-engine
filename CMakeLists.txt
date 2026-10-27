@@ -16,13 +16,27 @@ if(ENABLE_SANITIZERS)
   add_link_options(-fsanitize=address,undefined)
 endif()
 
+# ThreadSanitizer can't be combined with ASan, so it gets its own CI job.
+option(ENABLE_TSAN "Build with ThreadSanitizer" OFF)
+if(ENABLE_TSAN)
+  add_compile_options(-fsanitize=thread)
+  add_link_options(-fsanitize=thread)
+endif()
+
 add_library(options_core
   src/black_scholes.cpp
   src/binomial.cpp
   src/implied_vol.cpp
+  src/batch.cpp
 )
 target_include_directories(options_core PUBLIC include)
 target_compile_options(options_core PRIVATE -Wall -Wextra -Wpedantic)
+
+find_package(Threads REQUIRED)
+target_link_libraries(options_core PUBLIC Threads::Threads)
+
+add_executable(bench_batch bench/bench_batch.cpp)
+target_link_libraries(bench_batch PRIVATE options_core)
 
 # GoogleTest, downloaded at configure time
 if(POLICY CMP0135)
@@ -46,6 +60,7 @@ add_executable(tests
   tests/test_american.cpp
   tests/test_greeks.cpp
   tests/test_implied_vol.cpp
+  tests/test_batch.cpp
 )
 target_link_libraries(tests PRIVATE options_core GTest::gtest_main)
 gtest_discover_tests(tests)
