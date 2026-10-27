@@ -19,6 +19,7 @@ endif()
 add_library(options_core
   src/black_scholes.cpp
   src/binomial.cpp
+  src/implied_vol.cpp
 )
 target_include_directories(options_core PUBLIC include)
 target_compile_options(options_core PRIVATE -Wall -Wextra -Wpedantic)
@@ -44,6 +45,7 @@ add_executable(tests
   tests/test_binomial.cpp
   tests/test_american.cpp
   tests/test_greeks.cpp
+  tests/test_implied_vol.cpp
 )
 target_link_libraries(tests PRIVATE options_core GTest::gtest_main)
 gtest_discover_tests(tests)
