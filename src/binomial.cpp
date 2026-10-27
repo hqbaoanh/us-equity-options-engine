@@ -1,5 +1,6 @@
 #include "options/binomial.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 #include <vector>
@@ -30,9 +31,6 @@ BinomialPricer::BinomialPricer(int steps) : steps_(steps) {
 
 double BinomialPricer::price(const Contract& c, const Market& m) const {
     check_inputs(c, m);
-    if (c.style == ExerciseStyle::American) {
-        throw std::invalid_argument("American exercise not implemented yet");
-    }
     if (c.expiry == 0.0) {
         return intrinsic_value(c.type, m.spot, c.strike);
     }
@@ -60,9 +58,14 @@ double BinomialPricer::price(const Contract& c, const Market& m) const {
     }
 
     // Roll back one step at a time, reusing the same buffer.
+    const bool american = (c.style == ExerciseStyle::American);
+    const double u2 = u * u;
     for (int i = n - 1; i >= 0; --i) {
+        double s = m.spot * std::pow(d, i);  // lowest node at step i
         for (int j = 0; j <= i; ++j) {
-            values[j] = pu * values[j + 1] + pd * values[j];
+            const double hold = pu * values[j + 1] + pd * values[j];
+            values[j] = american ? std::max(hold, intrinsic_value(c.type, s, c.strike)) : hold;
+            s *= u2;
         }
     }
     return values[0];
