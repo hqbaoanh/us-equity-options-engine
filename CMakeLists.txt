@@ -43,6 +43,7 @@ add_executable(tests
   tests/test_black_scholes.cpp
   tests/test_binomial.cpp
   tests/test_american.cpp
+  tests/test_greeks.cpp
 )
 target_link_libraries(tests PRIVATE options_core GTest::gtest_main)
 gtest_discover_tests(tests)
