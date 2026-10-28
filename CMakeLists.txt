@@ -38,6 +38,18 @@ target_link_libraries(options_core PUBLIC Threads::Threads)
 add_executable(bench_batch bench/bench_batch.cpp)
 target_link_libraries(bench_batch PRIVATE options_core)
 
+# Python module, built into python/ so the scripts there can import it directly.
+option(BUILD_PYTHON "Build the options_engine Python module" OFF)
+if(BUILD_PYTHON)
+  set_target_properties(options_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+  find_package(pybind11 CONFIG REQUIRED)
+  pybind11_add_module(options_engine python/bindings.cpp)
+  target_link_libraries(options_engine PRIVATE options_core)
+  set_target_properties(options_engine PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python)
+endif()
+
 # GoogleTest, downloaded at configure time
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
