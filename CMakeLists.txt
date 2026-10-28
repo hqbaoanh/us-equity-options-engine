@@ -38,6 +38,9 @@ target_link_libraries(options_core PUBLIC Threads::Threads)
 add_executable(bench_batch bench/bench_batch.cpp)
 target_link_libraries(bench_batch PRIVATE options_core)
 
+add_executable(convergence bench/convergence.cpp)
+target_link_libraries(convergence PRIVATE options_core)
+
 # Python module, built into python/ so the scripts there can import it directly.
 option(BUILD_PYTHON "Build the options_engine Python module" OFF)
 if(BUILD_PYTHON)
