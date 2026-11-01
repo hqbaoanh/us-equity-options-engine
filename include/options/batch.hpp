@@ -13,10 +13,8 @@ struct Quote {
     double market_price;
 };
 
-// Every contract is priced independently, so these split the work across
-// threads with no shared state besides a work counter. threads = 0 uses all
-// hardware threads. The pricer must be safe to call from several threads at
-// once, which holds for any pricer whose price() only reads its members.
+// threads = 0 -> all hardware threads.
+// price() gets called from several threads at once, so it must only read the pricer's members.
 
 std::vector<double> price_batch(const Pricer& pricer, const std::vector<Contract>& contracts,
                                 const Market& market, unsigned threads = 0);

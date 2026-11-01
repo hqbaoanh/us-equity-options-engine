@@ -19,21 +19,16 @@ struct IvResult {
 };
 
 struct IvOptions {
-    // Below about 1% a tree with a high rate and few steps can't keep its
-    // up-move larger than the drift, so the search starts there.
+    // below ~1% a tree with high rate + few steps gets p > 1, so start here
     double vol_low = 0.01;
     double vol_high = 5.0;
     double price_tolerance = 1e-6;
     int max_iterations = 100;
 };
 
-// Finds the volatility at which pricer reproduces target_price.
-// market.volatility is ignored and used only as scratch space.
-//
-// Newton's method with vega from a central difference, kept inside a
-// shrinking bracket. Any step that would leave the bracket, or where vega is
-// too small to trust, is replaced by a bisection step, so it always converges
-// when a solution exists.
+// vol where pricer gives target_price. market.volatility is ignored (used as scratch).
+// Newton inside a shrinking bracket; bisection step if Newton leaves the bracket or vega
+// is tiny. bisection = nested interval theorem, so it can't fail if a root exists.
 IvResult implied_volatility(const Pricer& pricer, const Contract& contract, Market market,
                             double target_price, const IvOptions& options = {});
 

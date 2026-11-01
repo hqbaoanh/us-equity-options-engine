@@ -10,11 +10,9 @@ namespace opt {
 
 namespace {
 
-// Runs body(i) for every i in [0, n) on up to `threads` threads.
-//
-// Workers pull small chunks from a shared counter instead of each getting a
-// fixed slice up front. IV solves take a varying number of iterations, so
-// fixed slices would leave some threads idle while others finish their share.
+// body(i) for i in [0, n) on up to `threads` threads.
+// workers grab chunks from a shared counter instead of fixed slices, since IV solves
+// take different numbers of iterations (and E-cores are slower).
 template <typename Body>
 void parallel_for(std::size_t n, unsigned threads, Body body) {
     if (threads == 0) {
@@ -45,8 +43,7 @@ void parallel_for(std::size_t n, unsigned threads, Body body) {
                 }
             }
         } catch (...) {
-            // An exception escaping a std::thread would call std::terminate,
-            // so hold on to it and rethrow on the calling thread.
+            // exception escaping a std::thread = std::terminate, so save it and rethrow later
             errors[id] = std::current_exception();
             next.store(n, std::memory_order_relaxed);  // tell the others to stop
         }
@@ -57,7 +54,7 @@ void parallel_for(std::size_t n, unsigned threads, Body body) {
     for (unsigned id = 1; id < threads; ++id) {
         pool.emplace_back(worker, id);
     }
-    worker(0);  // the calling thread does its share too
+    worker(0);  // main thread works too
     for (auto& t : pool) {
         t.join();
     }

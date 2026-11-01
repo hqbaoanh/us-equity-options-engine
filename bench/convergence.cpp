@@ -1,5 +1,4 @@
-// Prints how the tree's error against Black-Scholes shrinks with the number
-// of steps, and the American put prices for the standard benchmark case.
+// tree vs Black-Scholes error as steps double, + American put reference case
 
 #include <cmath>
 #include <cstdio>

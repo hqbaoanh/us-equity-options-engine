@@ -6,7 +6,7 @@
 
 namespace opt {
 
-// Closed-form European prices and Greeks. Used as the reference the tree is tested against.
+// closed-form European price and Greeks (reference for testing the tree)
 double black_scholes_price(OptionType type, const Market& market, double strike, double expiry);
 Greeks black_scholes_greeks(OptionType type, const Market& market, double strike, double expiry);
 

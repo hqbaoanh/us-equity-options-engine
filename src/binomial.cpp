@@ -21,8 +21,7 @@ void check_inputs(const Contract& c, const Market& m) {
     }
 }
 
-// The root price plus the option values at the first two levels of the
-// tree, which is all the Greeks need.
+// root price + values at steps 1 and 2 (enough for the Greeks)
 struct TreeResult {
     double price;
     double u;
@@ -40,13 +39,12 @@ TreeResult roll_back(const Contract& c, const Market& m, int n) {
         throw std::domain_error("risk-neutral probability outside (0, 1); use more steps");
     }
 
-    // Fold the per-step discount into the probabilities.
+    // discount folded into the probabilities
     const double disc = std::exp(-m.rate * dt);
     const double pu = disc * p;
     const double pd = disc * (1.0 - p);
 
-    // values[j] is the option value at the node with j up-moves.
-    // At expiry that node's stock price is S * u^j * d^(n-j) = S * u^(2j-n).
+    // values[j] = value at the node with j up-moves; at expiry S * u^j * d^(n-j) = S * u^(2j-n)
     std::vector<double> values(n + 1);
     for (int j = 0; j <= n; ++j) {
         const double s = m.spot * std::pow(u, 2 * j - n);
@@ -65,7 +63,7 @@ TreeResult roll_back(const Contract& c, const Market& m, int n) {
     };
     keep_early_levels(n);
 
-    // Roll back one step at a time, reusing the same buffer.
+    // roll back in place, one buffer
     const bool american = (c.style == ExerciseStyle::American);
     const double u2 = u * u;
     for (int i = n - 1; i >= 0; --i) {
@@ -112,21 +110,20 @@ Greeks BinomialPricer::greeks(const Contract& c, const Market& m) const {
 
     Greeks g{};
 
-    // Delta: slope between the two nodes at step 1 (stock at S/u and S*u).
+    // delta: slope between the 2 nodes at step 1 (S/u, S*u)
     g.delta = (t.v1[1] - t.v1[0]) / (s * u - s / u);
 
-    // Gamma: how much that slope changes across step 2 (S/u^2, S, S*u^2).
+    // gamma: change in that slope across step 2 (S/u^2, S, S*u^2)
     const double s_up = s * u * u;
     const double s_down = s / (u * u);
     const double delta_up = (t.v2[2] - t.v2[1]) / (s_up - s);
     const double delta_down = (t.v2[1] - t.v2[0]) / (s - s_down);
     g.gamma = (delta_up - delta_down) / (0.5 * (s_up - s_down));
 
-    // The middle node at step 2 has the same stock price as the root,
-    // so the change in value there is pure time decay over 2*dt.
+    // theta: middle node at step 2 has the same S as the root, so the difference is just time (2*dt)
     g.theta = (t.v2[1] - t.price) / (2.0 * t.dt);
 
-    // The tree has no direct vega, so bump volatility and reprice.
+    // vega: no way to read it off the tree, bump vol and reprice
     const double h = std::min(0.01, 0.5 * m.volatility);
     Market up = m;
     Market down = m;

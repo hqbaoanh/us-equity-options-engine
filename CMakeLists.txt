@@ -9,14 +9,14 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-# Turned on in CI so every test run also checks for memory errors and UB.
+# on in CI
 option(ENABLE_SANITIZERS "Build with AddressSanitizer and UBSan" OFF)
 if(ENABLE_SANITIZERS)
   add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
   add_link_options(-fsanitize=address,undefined)
 endif()
 
-# ThreadSanitizer can't be combined with ASan, so it gets its own CI job.
+# can't combine TSan with ASan, separate build
 option(ENABLE_TSAN "Build with ThreadSanitizer" OFF)
 if(ENABLE_TSAN)
   add_compile_options(-fsanitize=thread)
@@ -41,7 +41,7 @@ target_link_libraries(bench_batch PRIVATE options_core)
 add_executable(convergence bench/convergence.cpp)
 target_link_libraries(convergence PRIVATE options_core)
 
-# Python module, built into python/ so the scripts there can import it directly.
+# python module goes into python/ so the scripts can import it
 option(BUILD_PYTHON "Build the options_engine Python module" OFF)
 if(BUILD_PYTHON)
   set_target_properties(options_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -53,7 +53,7 @@ if(BUILD_PYTHON)
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python)
 endif()
 
-# GoogleTest, downloaded at configure time
+# googletest
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()

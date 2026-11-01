@@ -15,11 +15,9 @@ IvResult implied_volatility(const Pricer& pricer, const Contract& contract, Mark
     double lo = opts.vol_low;
     double hi = opts.vol_high;
 
-    // Option prices increase with volatility, so a root exists only if the
-    // target sits between the prices at the two ends of the range.
-    // If the price at the lowest volatility already matches, the price is
-    // flat in volatility there (usually an option worth exactly its exercise
-    // value), so any low volatility fits and there's no single answer.
+    // price is increasing in vol -> root exists iff target is between the prices at lo and hi (IVT).
+    // if lo already matches, price is flat in vol there (e.g. put worth exactly K - S),
+    // so the root isn't unique.
     const double err_lo = error_at(lo);
     if (std::abs(err_lo) < opts.price_tolerance) {
         return {lo, 0, IvStatus::Undetermined};
@@ -37,7 +35,7 @@ IvResult implied_volatility(const Pricer& pricer, const Contract& contract, Mark
             return {vol, iter, IvStatus::Converged};
         }
 
-        // The root is on the side where the error changes sign.
+        // keep the half where the sign changes
         if (err < 0.0) {
             lo = vol;
         } else {
@@ -47,11 +45,11 @@ IvResult implied_volatility(const Pricer& pricer, const Contract& contract, Mark
             return {vol, iter, IvStatus::Converged};
         }
 
-        // Error and price differ by a constant, so this is also the vega.
+        // d(error)/d(vol) = vega
         const double bump = std::min(1e-3, 0.5 * vol);
         const double vega = (error_at(vol + bump) - error_at(vol - bump)) / (2.0 * bump);
         double next = vol - err / vega;
-        // Written as !(vega > ...) so a NaN vega also falls back to bisection.
+        // !(vega > ...) so a NaN vega also falls back to bisection
         if (!(vega > 1e-8) || next <= lo || next >= hi) {
             next = 0.5 * (lo + hi);
         }

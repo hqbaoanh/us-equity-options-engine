@@ -1,6 +1,4 @@
-// Times batch pricing and IV solving on a synthetic 10,000-contract chain
-// across thread counts.
-//
+// batch pricing + IV timing on a fake 10,000-contract chain, 1..max threads
 //   ./bench_batch [steps] [max_threads]
 
 #include <algorithm>
@@ -55,7 +53,7 @@ int main(int argc, char** argv) {
     Market m{100.0, 0.05, 0.01, 0.3};
     const auto chain = make_chain();
 
-    // Quotes for the IV benchmark: price each contract on a simple smile.
+    // fake quotes: price each contract on a simple smile
     std::vector<Quote> quotes;
     quotes.reserve(chain.size());
     for (const auto& c : chain) {

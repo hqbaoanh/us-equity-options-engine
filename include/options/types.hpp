@@ -12,8 +12,7 @@ struct Contract {
     double expiry;  // years
 };
 
-// Everything about the market a pricer needs besides the contract itself.
-// Rates and yields are continuously compounded, annualized.
+// rate and dividend_yield: continuously compounded, annual
 struct Market {
     double spot;
     double rate;

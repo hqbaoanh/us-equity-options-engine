@@ -13,8 +13,7 @@ public:
 
     double price(const Contract& contract, const Market& market) const override;
 
-    // Delta, gamma and theta come from the tree's first nodes at no extra
-    // cost; vega needs two more pricings with volatility bumped.
+    // delta, gamma, theta from the first two levels of the tree; vega = 2 extra pricings (bump vol)
     Greeks greeks(const Contract& contract, const Market& market) const;
 
     int steps() const { return steps_; }

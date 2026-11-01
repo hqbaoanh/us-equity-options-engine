@@ -16,8 +16,7 @@ using namespace opt;
 
 namespace {
 
-// Column-oriented entry point so a pandas DataFrame can be passed straight
-// in. Returns NaN wherever the solver didn't converge.
+// takes columns so DataFrame columns can go straight in. NaN where it didn't converge.
 std::vector<double> implied_vol_chain(const Pricer& pricer, const std::vector<bool>& is_call,
                                       const std::vector<double>& strikes,
                                       const std::vector<double>& expiries,
@@ -111,8 +110,7 @@ PYBIND11_MODULE(options_engine, m) {
           },
           py::arg("pricer"), py::arg("contract"), py::arg("market"), py::arg("price"));
 
-    // The batch runs entirely in C++, so release the GIL and let Python
-    // threads keep working while it runs.
+    // all C++, so release the GIL while it runs
     m.def("implied_vol_chain", &implied_vol_chain, py::arg("pricer"), py::arg("is_call"),
           py::arg("strikes"), py::arg("expiries"), py::arg("prices"), py::arg("market"),
           py::arg("american") = true, py::arg("threads") = 0u,

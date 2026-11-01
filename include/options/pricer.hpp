@@ -4,8 +4,7 @@
 
 namespace opt {
 
-// Common interface so the IV solver, Greeks and batch code don't care
-// which model produced the price.
+// IV solver, batch code and bindings only see this, not the tree
 class Pricer {
 public:
     virtual ~Pricer() = default;
